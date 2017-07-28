@@ -8,17 +8,34 @@
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
+apply plugin: 'maven'
 
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
 
 apply plugin: 'eclipse'
 
+//buildscript {
+//	repositories {
+//		jcenter()
+//	}
+//
+//	dependencies {
+//		classpath 'net.researchgate:gradle-release:2.4.0'
+//	}
+//}
+plugins {
+	id 'net.researchgate.release' version '2.4.0'
+}
+
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    maven {
+        url 'http://isidg59077:8180/artifactory/remote-repos'
+    }
 }
 
 dependencies {
@@ -32,3 +49,51 @@ dependencies {
 // Define the main class for the application
 mainClassName = 'App'
 
+group 'xwada'
+//group = 'xwada'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+//            configuration = configurations.deployerJars
+            repository(url: 'http://isidg59077:8180/artifactory/dummy-snapshot-local') {
+                authentication(userName: 'admin', password: 'password')
+            }
+        }
+    }
+}
+
+release {
+    failOnCommitNeeded = true
+    failOnPublishNeeded = true
+    failOnSnapshotDependencies = false
+    failOnUnversionedFiles = true
+    failOnUpdateNeeded = true
+    revertOnFail = true
+    preCommitText = ''
+    preTagCommitMessage = '[Gradle Release Plugin] - pre tag commit: '
+    tagCommitMessage = '[Gradle Release Plugin] - creating tag: '
+    newVersionCommitMessage = '[Gradle Release Plugin] - new version commit: '
+    tagTemplate = '${version}'
+    versionPropertyFile = 'gradle.properties'
+    versionProperties = []
+    buildTasks = ['build', 'install']
+//    versionPatterns = [
+//        /(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}${m[0][2]}") }
+//    ]
+    versionPatterns = []
+    scmAdapters = [
+        net.researchgate.release.GitAdapter,
+//        net.researchgate.release.SvnAdapter,
+//        net.researchgate.release.HgAdapter,
+//        net.researchgate.release.BzrAdapter
+    ]
+
+    git {
+        requireBranch = 'master'
+        pushToRemote = 'origin'
+        pushToBranchPrefix = ''
+        commitVersionFileOnly = false
+        signTag = false		// TODO èêñº
+    }
+}
